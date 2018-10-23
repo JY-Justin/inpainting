@@ -14,7 +14,9 @@ You will need to have installed in your environment :
 
 ## Run the script
 
-To be filled later on
+To run the script use the following scheme :
+
+ python3 texture\_based\_inpainting.py IMAGE\_PATH MASK\_PATH
 
 ## Basic explanation of the algorithm
 
@@ -27,3 +29,8 @@ Repeat the following until the image is entirely filled:
 3. Find the patch with the biggest priority, we will fill this one
 4. Calculate the difference between our patch and every patch in the picture using the Sum of Square Differences with all the pixels not in the mask/area to be filled.
 5. Take the patch with the smallest difference to our patch, which we will call our *donor patch*. Then copy the data from our *donor patch* to our patch.
+
+##Current state of the program
+
+Currently the inpainting is not working correctly, nonetheless the algorithm is globally correct (in my humble opinion, as my knowledge of the algorithm is not perfect).
+However some tweaks in the step 2 (priority calculation) and step 4 (calculating the difference between patches) are needed for a correct result.
