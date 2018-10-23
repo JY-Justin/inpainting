@@ -6,7 +6,7 @@ environment you are running the script in.
 
 """
 
-# import sys
+import sys
 import numpy as np
 import cv2
 from matplotlib import pyplot as plt
@@ -125,7 +125,7 @@ def most_similar_patch(point, img, mask):
                 if difference < min_patch_difference:
                     min_patch_difference = difference
                     q = (q_y, q_x)
-    return q
+    return q, min_patch_difference
 
 @jit
 def calculate_difference(p, q, img, mask):
@@ -177,11 +177,22 @@ def main():
     """
     Main function that will do the inpainting
     """
-
+    
+    if len(sys.argv) < 3 :
+        sys.exit("Not enough arguments, please enter the image and mask path")
 
     # Preprocessing, creating the necessary data for our algorithm
-    img = cv2.imread("test.png", 1)
-    mask = cv2.imread("masktest.png", 0)
+    img = cv2.imread(sys.argv[1], 1)
+    if img is None :
+        sys.exit("Image not found")
+
+    mask = cv2.imread(sys.argv[2], 0)
+    if mask is None:
+        sys.exit("Mask not found")
+
+    if img.shape[:2] != mask.shape :
+        sys.exit("Image and mask are of different size")
+
     mask = cv2.threshold(mask, 127, 255, cv2.THRESH_BINARY)[1]
     remove_mask(img, mask)
 
@@ -206,8 +217,12 @@ def main():
             if p[point] > max_priority:
                 max_priority = p[point]
                 point_max_priority = point
-        q = most_similar_patch(point_max_priority, img_lab, mask)
-        print("Most similar patch found in :",q)
+        q,diff = most_similar_patch(point_max_priority, img_lab, mask)
+        print("Step:",i,"Point of max prio :",point_max_priority,"Most similar patch found in :",q, " with a difference of :",diff)
+       # print("Most similar patch :\n", img[q[0]-4:q[0]+5,q[1]-4:q[1]+5])
+       # print("Our patch to fill :\n",
+       #         img[point_max_priority[0]-4:point_max_priority[0]+5,point_max_priority[1]-4:point_max_priority[1]+5])
+       # print("=================================================")
         copy_data(point_max_priority, q, img, mask)
         #plt.imshow(c*255, cmap="gray")
         #plt.show()
@@ -215,11 +230,11 @@ def main():
         update_c_mask(point_max_priority, mask, c)
         cv2.imwrite("results/img-{}.png".format(i), img)
         cv2.imwrite("results/gray-{}.png".format(i), img_gray)
-        cv2.imwrite("results/c-{}.png".format(i), c*255)
-        cv2.imwrite("results/p-{}.png".format(i), p*255/np.max(p))
+        #cv2.imwrite("results/c-{}.png".format(i), c*255)
+        #cv2.imwrite("results/p-{}.png".format(i), p*255/np.max(p))
         
         i+=1
-        cv2.imwrite("result.png", img)
+    cv2.imwrite("result.png", img)
 
 if __name__ == "__main__":
     main()
